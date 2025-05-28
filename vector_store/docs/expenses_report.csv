@@ -1,0 +1,6 @@
+user_id,category,amount,description,expense_date
+1,Groceries,75,Weekly Grocery shopping,1/1/2025
+1,Rent,800,January Apartment rent,1/1/2025
+1,Utilities,120,Electricity bill,1/5/2025
+1,Transpotation,40,Bus fare,1/6/2025
+1,Entertainment,20,Movie Night,1/20/2025
