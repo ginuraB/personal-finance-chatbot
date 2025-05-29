@@ -2,12 +2,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from backend.routes.chatbot_routes import router as chatbot_router
+from backend.utils.database import init_db
 
 app = FastAPI(
     title="Finance Chatbot API",
     description="A personal finance chatbot with various financial tools and capabilities",
     version="1.0.0"
 )
+
+# Initialize database on startup
+@app.on_event("startup")
+async def startup_event():
+    init_db()
 
 # Allow frontend (localhost:5173 from Vite and others)
 app.add_middleware(
