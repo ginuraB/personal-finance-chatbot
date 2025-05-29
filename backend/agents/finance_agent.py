@@ -17,25 +17,24 @@ def run_agent(user_query: str):
             {
                 "type": "web_search_preview",
                 "search_context_size": "medium"
-            },
-            {
-                "type": "file_search",
-                "vector_store_ids": [os.getenv("VECTOR_STORE_ID", "")],
-                "max_num_results": 5
-            },
-            {
-                "type": "code_interpreter",
-                "container": {"type": "auto"}
             }
         ]
+        
+        # Only add file search if we have a valid vector store ID
+        vector_store_id = os.getenv("VECTOR_STORE_ID")
+        if vector_store_id and vector_store_id.startswith("vs_"):
+            tools.append({
+                "type": "file_search",
+                "vector_store_ids": [vector_store_id],
+                "max_num_results": 5
+            })
 
-        # Create response using the new Responses API
+        # Create response using the Responses API
         response = client.responses.create(
             model="gpt-4.1",
             tools=tools,
-            instructions="You are a helpful finance assistant. Use the available tools to provide accurate financial information. When searching for market data or news, use web search. When looking up stored documents or budgets, use file search. For calculations, use the code interpreter.",
-            input=user_query,
-            include=["file_search_call.results", "web_search_call.results"]
+            instructions="You are a helpful finance assistant. Use web search for market data and news. For calculations and data analysis, explain the process clearly.",
+            input=user_query
         )
 
         # Extract the text response
