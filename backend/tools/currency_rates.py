@@ -5,11 +5,15 @@ def get_exchange_rate(base: str, target: str):
     try:
         response = requests.get(url)
         data = response.json()
+        if "rates" not in data or target.upper() not in data["rates"]:
+            raise ValueError("Unable to fetch exchange rate")
+            
         rate = data["rates"][target.upper()]
         return {
             "base": base.upper(),
             "target": target.upper(),
-            "rate": rate
+            "rate": round(float(rate), 4),
+            "timestamp": data.get("timestamp")
         }
     except Exception as e:
-        return {"error": str(e)}
+        raise ValueError(f"Error fetching exchange rate: {str(e)}")

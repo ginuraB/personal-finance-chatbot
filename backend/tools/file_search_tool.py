@@ -1,24 +1,49 @@
-import os
 from openai import OpenAI
+import os
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-# Initialize OpenAI client
-client = OpenAI(api_key=OPENAI_API_KEY)
-
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def search_finance_files(query: str):
-    vector_store_id = "vs_6836df8f306881919cf54b2d7e654e4f"
-    response = client.responses.create(
-        model="gpt-4o-mini",
-        input=query,
-        tools=[{
-            "type": "file_search",
-            "vector_store_ids": [vector_store_id]
-        }]
-    )
-    return response.output[1]["content"][0]["text"]
+    try:
+        response = client.responses.create(
+            model="gpt-4.1",
+            tools=[{
+                "type": "file_search",
+                "vector_store_ids": [os.getenv("VECTOR_STORE_ID", "")],
+                "max_num_results": 5
+            }],
+            input=f"Search for information about: {query}",
+            include=["file_search_call.results"]
+        )
+        
+        # Extract text response and citations
+        if hasattr(response, 'output_text'):
+            return {
+                "query": query,
+                "results": response.output_text,
+                "source": "AI-powered file search"
+            }
+            
+        # If output_text is not available, try to extract from message content
+        for output in response.output:
+            if output.type == "message":
+                for content in output.content:
+                    if content.type == "output_text":
+                        return {
+                            "query": query,
+                            "results": content.text,
+                            "source": "AI-powered file search"
+                        }
+        
+        return {
+            "query": query,
+            "results": "No results found",
+            "source": "AI-powered file search"
+        }
+    except Exception as e:
+        raise ValueError(f"Error in file search: {str(e)}")
 
